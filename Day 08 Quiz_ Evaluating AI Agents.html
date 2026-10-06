@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Day 08 Quiz: Evaluating AI Agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Literata:opsz,wght@7..72,400;7..72,600&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#e8edf1;--card:#f8fafb;--ink:#17263b;--soft:#5b6a7c;--line:#c5cfd9;--ok:#177a52;--okbg:#d5efe2;--no:#c42a5c;--nobg:#f9dce6;--hi:#ffd447;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#10192a;--card:#18243a;--ink:#e9eef5;--soft:#93a3b8;--line:#2d3d57;--ok:#4fd39a;--okbg:#14382c;--no:#ff6b95;--nobg:#401a2b;--hi:#ffd447}}
+:root[data-theme="dark"]{--paper:#10192a;--card:#18243a;--ink:#e9eef5;--soft:#93a3b8;--line:#2d3d57;--ok:#4fd39a;--okbg:#14382c;--no:#ff6b95;--nobg:#401a2b;--hi:#ffd447}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;color:var(--ink);font:400 17px/1.55 Literata,Georgia,serif;
+background:var(--paper) radial-gradient(circle at 1px 1px,var(--line) 1px,transparent 1.5px) 0 0/22px 22px}
+main{max-width:720px;margin:0 auto;padding:28px 18px 60px}
+h1,h2,.display{font-family:'Bricolage Grotesque','Trebuchet MS',sans-serif;margin:0}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:18px}
+h1{font-size:clamp(26px,5vw,36px);font-weight:800;line-height:1.05;letter-spacing:-.02em}
+.sub{color:var(--soft);font-size:15px;margin-top:6px}
+.score{font:800 22px 'Bricolage Grotesque',sans-serif;white-space:nowrap}
+.score small{font:500 14px Literata,serif;color:var(--soft)}
+.strip{display:grid;grid-template-columns:repeat(15,1fr);gap:4px;margin-bottom:22px}
+.strip button{aspect-ratio:1;min-height:26px;border:1.5px solid var(--line);background:var(--card);color:var(--soft);border-radius:6px;font:500 12px 'Bricolage Grotesque',sans-serif;cursor:pointer;padding:0}
+.strip button.cur{border-color:var(--ink);color:var(--ink);box-shadow:0 2px 0 var(--ink)}
+.strip button.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.strip button.no{background:var(--no);border-color:var(--no);color:#fff}
+.q{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:26px 24px;box-shadow:6px 6px 0 var(--ink);animation:pop .35s ease}
+@keyframes pop{from{transform:translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.q h2{font-size:clamp(20px,3.6vw,25px);font-weight:500;line-height:1.3;margin-bottom:22px}
+.qn{display:inline-block;background:var(--hi);color:#17263b;font:800 14px 'Bricolage Grotesque',sans-serif;padding:2px 9px;border-radius:5px;margin-bottom:12px}
+.opts{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.opt{display:flex;gap:14px;align-items:center;width:100%;text-align:left;font:inherit;color:inherit;background:transparent;border:2px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:var(--ink);background:var(--paper)}
+.opt:focus-visible,.strip button:focus-visible,.btn:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+.bub{flex:none;width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;font:800 14px 'Bricolage Grotesque',sans-serif;transition:background .2s,color .2s}
+.opt:disabled{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--okbg)}
+.opt.right .bub{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--no);background:var(--nobg)}
+.opt.wrong .bub{background:var(--no);border-color:var(--no);color:#fff}
+.opt.dim{opacity:.55}
+.fb{margin-top:20px;border-radius:10px;padding:16px 18px;animation:pop .3s ease}
+.fb.ok{background:var(--okbg);border-left:6px solid var(--ok)}
+.fb.no{background:var(--nobg);border-left:6px solid var(--no)}
+.fb b{font:800 19px 'Bricolage Grotesque',sans-serif;display:block;margin-bottom:4px}
+.fb.ok b{color:var(--ok)}.fb.no b{color:var(--no)}
+.fb p{margin:0}
+.nav{display:flex;justify-content:space-between;align-items:center;margin-top:20px;gap:10px}
+.btn{font:800 16px 'Bricolage Grotesque',sans-serif;background:var(--ink);color:var(--paper);border:2px solid var(--ink);border-radius:10px;padding:11px 22px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:disabled{opacity:.35;cursor:default}
+.hint{color:var(--soft);font-size:14px}
+.end{text-align:center}
+.big{font:800 clamp(64px,16vw,110px)/1 'Bricolage Grotesque',sans-serif;letter-spacing:-.04em}
+.miss{text-align:left;margin:22px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.miss li{border-left:5px solid var(--no);background:var(--nobg);padding:8px 12px;border-radius:6px;font-size:15px}
+@media (max-width:520px){.q{padding:20px 16px}.strip{gap:3px}.hint{display:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div><h1>Day 08 Quiz</h1><div class="sub">Evaluating and safeguarding AI agents</div></div>
+ <div class="score" id="score"></div>
+</header>
+<nav class="strip" id="strip" aria-label="Questions"></nav>
+<section id="stage" aria-live="polite"></section>
+</main>
+<script>
+const Q=[
+["What is the main purpose of a content filter in a generative AI application?",["Control harmful or unsafe content","Increase model training speed","Store evaluation results","Create test datasets"],0,"Content filters screen prompts and responses for harmful or unsafe material before it reaches the user. They protect the application at run time; they do not affect training, storage or datasets."],
+["What is the main purpose of Red Teaming an AI system?",["To improve the application's user interface","To intentionally test the system for harmful behavior and vulnerabilities","To increase the model's response speed","To reduce the size of the model"],1,"Red teaming means deliberately attacking the system, for example with jailbreak prompts, to find harmful behavior and weaknesses before real users do."],
+["Which Responsible AI principle focuses on reducing the possibility of harmful or unsafe AI behavior?",["Transparency","Inclusiveness","Safety","Accountability"],2,"Safety is about preventing harmful or unsafe behavior. Transparency is about explaining how the system works, inclusiveness about serving everyone, and accountability about who answers for outcomes."],
+["What does LLMOps mainly focus on when managing generative AI applications?",["Evaluation, testing, prompt management, monitoring, and observability","Designing application logos and user interfaces","Managing only physical servers","Creating database tables"],0,"LLMOps is the operational practice around LLM apps: evaluating and testing them, versioning prompts, and monitoring them in production."],
+["Why are test datasets used when evaluating an AI agent?",["To permanently change the agent's behavior","To provide defined inputs for consistent testing","To replace the agent's instructions","To create a new AI model"],1,"A test dataset gives the same defined inputs every run, so results can be compared fairly. It measures the agent; it does not change it."],
+["What does the Coherence evaluator check?",["Whether the response is clear and logically consistent","Whether the agent has administrator access","Whether the model has enough training data","Whether the response is stored in a database"],0,"Coherence judges how well the response reads: is it clear, well organized and free of contradictions?"],
+["What does Task Adherence evaluate?",["Whether the agent follows the expected task or instruction","Whether the model responds quickly","Whether the user has access to Jira","Whether the test dataset contains enough records"],0,"Task Adherence checks whether the agent actually did what it was asked to do, in line with its instructions."],
+["Why are safety evaluators used during AI agent evaluation?",["To identify potentially unsafe model responses","To automatically retrain the model","To increase the model's context window","To create new test datasets"],0,"Safety evaluators flag responses that may contain harmful or unsafe content, so you can fix the agent before release. They only detect; they don't retrain."],
+["What is the main purpose of Prompt Evaluation?",["To measure how well a prompt produces the expected model behavior","To create a new Azure subscription","To replace content filtering","To delete old prompts"],0,"Prompt evaluation tests whether a prompt reliably gets the behavior you want, so you can compare and improve prompt versions."],
+["An AI agent gives a clear and well-written response, but it does not perform the task requested by the user. Which evaluation area is most directly affected?",["Coherence","Task Adherence","Content Filtering","Observability"],1,"The writing is clear, so Coherence is fine. The failure is that the requested task wasn't done, which is exactly what Task Adherence measures."],
+["Why is it useful to review individual evaluation test cases instead of only looking at the overall score?",["To identify specific weak or failed responses","To automatically retrain the model","To remove failed test cases","To disable safety evaluations"],0,"An overall score can hide problems. Looking at each case shows which inputs failed and why, so you know what to fix."],
+["What does SDK stand for?",["Software Development Kit","System Development Kernel","Software Deployment Key","Service Data Knowledge"],0,"SDK stands for Software Development Kit: a bundle of libraries and tools for building against a platform or service."],
+["Why should an AI agent be evaluated again after its instructions or behavior are improved?",["To verify whether the improvement produced better results","To delete the previous evaluation","To disable the agent's safety controls","To create a new model"],0,"Re-running the same evaluation proves whether the change helped, and the earlier results stay as the baseline to compare with."],
+["In the Jira test generation lab, why are acceptance criteria important when generating test cases?",["They describe conditions that help determine what the feature should satisfy","They determine the Azure subscription used by the model","They control the model's response temperature","They replace the Jira story description"],0,"Acceptance criteria state what the feature must satisfy, so generated test cases can check those exact conditions. They add to the story description, not replace it."],
+["What is the main benefit of using a repeatable evaluation process for an AI agent?",["It allows the agent's behavior to be tested and compared consistently","It guarantees that the model will never make a mistake","It removes the need for human review","It automatically improves every model response"],0,"Repeatability lets you compare runs fairly over time. It doesn't guarantee zero mistakes, replace human review, or improve the agent by itself."]
+];
+const L="ABCD",st={i:0,ans:Array(Q.length).fill(null),done:false};
+const $=id=>document.getElementById(id),stage=$("stage");
+const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+function strip(){
+ $("strip").innerHTML=Q.map((_,k)=>{const a=st.ans[k];const c=(a===null?"":a===Q[k][2]?"ok":"no")+(k===st.i&&!st.done?" cur":"");
+ return `<button class="${c}" data-k="${k}" aria-label="Question ${k+1}">${k+1}</button>`}).join("");
+ const n=st.ans.filter(a=>a!==null).length,r=st.ans.filter((a,k)=>a===Q[k][2]).length;
+ $("score").innerHTML=`${r}<small> correct of ${n} answered</small>`;
+}
+function render(){
+ strip();
+ if(st.done)return end();
+ const [q,o,c,e]=Q[st.i],a=st.ans[st.i],ans=a!==null;
+ stage.innerHTML=`<div class="q"><span class="qn">Question ${st.i+1} of ${Q.length}</span><h2>${esc(q)}</h2>
+ <ul class="opts">${o.map((t,k)=>{let cls="";if(ans){cls=k===c?"right":k===a?"wrong":"dim"}
+ return `<li><button class="opt ${cls}" data-o="${k}" ${ans?"disabled":""}><span class="bub">${ans&&k===c?"✓":ans&&k===a?"✕":L[k]}</span><span>${esc(t)}</span></button></li>`}).join("")}</ul>
+ ${ans?`<div class="fb ${a===c?"ok":"no"}"><b>${a===c?"Correct":"Not quite"}</b>${a!==c?`<p style="margin-bottom:6px">Right answer: <strong>${L[c]}. ${esc(o[c])}</strong></p>`:""}<p>${esc(e)}</p></div>`:""}
+ <div class="nav"><button class="btn ghost" id="prev" ${st.i===0?"disabled":""}>Back</button><span class="hint">Press A–D to answer, ← → to move</span>
+ <button class="btn" id="next" ${ans?"":"disabled"}>${st.i===Q.length-1?"See results":"Next question"}</button></div></div>`;
+}
+function end(){
+ const r=st.ans.filter((a,k)=>a===Q[k][2]).length,miss=Q.map((q,k)=>[q,k]).filter(([q,k])=>st.ans[k]!==q[2]);
+ stage.innerHTML=`<div class="q end"><span class="qn">Finished</span><div class="big">${r}/${Q.length}</div>
+ <h2 style="margin-top:6px">${r===Q.length?"Perfect score":r>=Q.length*.8?"Strong result":"Worth another pass"}</h2>
+ ${miss.length?`<ul class="miss">${miss.map(([q,k])=>`<li><strong>Q${k+1}.</strong> ${esc(q[0])}</li>`).join("")}</ul>`:""}
+ <div class="nav" style="justify-content:center"><button class="btn ghost" id="rev">Review answers</button><button class="btn" id="again">Restart quiz</button></div></div>`;
+}
+stage.addEventListener("click",e=>{
+ const o=e.target.closest("[data-o]");
+ if(o)return pick(+o.dataset.o);
+ if(e.target.id==="next")return go(1);
+ if(e.target.id==="prev")return go(-1);
+ if(e.target.id==="again"){st.i=0;st.ans.fill(null);st.done=false;render()}
+ if(e.target.id==="rev"){st.i=0;st.done=false;render()}
+});
+$("strip").addEventListener("click",e=>{const b=e.target.closest("[data-k]");if(b){st.i=+b.dataset.k;st.done=false;render()}});
+function pick(k){if(st.done||st.ans[st.i]!==null)return;st.ans[st.i]=k;render()}
+function go(d){
+ if(d>0&&st.i===Q.length-1){st.done=true;return render()}
+ st.i=Math.max(0,Math.min(Q.length-1,st.i+d));render();
+}
+document.addEventListener("keydown",e=>{
+ if(st.done)return;const k=L.indexOf(e.key.toUpperCase());
+ if(e.key.length===1&&k>-1)pick(k);
+ else if(e.key==="ArrowRight"&&st.ans[st.i]!==null)go(1);
+ else if(e.key==="ArrowLeft")go(-1);
+ else if(e.key==="Enter"&&st.ans[st.i]!==null&&document.activeElement.tagName!=="BUTTON")go(1);
+});
+render();
+</script>
+</body>
+</html>
